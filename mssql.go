@@ -13,6 +13,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"golang.org/x/net/proxy"
 )
 
 var driverInstance = &MssqlDriver{processQueryText: true}
@@ -22,7 +24,12 @@ func init() {
 	sql.Register("mssql", driverInstance)
 	sql.Register("sqlserver", driverInstanceNoProcess)
 	createDialer = func(p *connectParams) dialer {
-		return tcpDialer{&net.Dialer{Timeout: p.dial_timeout, KeepAlive: p.keepAlive}}
+		if p.proxy != nil {
+			pdialer, _ = proxy.FromURL(p.proxy, proxy.Direct)
+			return proxyDialer{pdialer}
+		} else {
+			return tcpDialer{&net.Dialer{Timeout: p.dial_timeout, KeepAlive: p.keepAlive}}
+		}
 	}
 }
 
@@ -35,6 +42,14 @@ var createDialer func(p *connectParams) dialer
 
 type tcpDialer struct {
 	nd *net.Dialer
+}
+
+type proxyDialer struct {
+	pd proxy.Dailer
+}
+
+func (d proxyDialer) Dial(addr string) (net.Conn, error) {
+	return d.pd.Dial("tcp", addr)
 }
 
 func (d tcpDialer) Dial(addr string) (net.Conn, error) {

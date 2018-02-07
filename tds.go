@@ -674,6 +674,7 @@ type connectParams struct {
 	failOverPartner        string
 	failOverPort           uint64
 	packetSize             uint16
+	proxy                  *url.URL
 }
 
 func splitConnectionString(dsn string) (res map[string]string) {
@@ -1095,6 +1096,15 @@ func parseConnectParams(dsn string) (connectParams, error) {
 			f := "Invalid tcp port '%v': %v"
 			return p, fmt.Errorf(f, failOverPort, err.Error())
 		}
+	}
+
+	proxy, ok := params["proxy"]
+	if ok {
+		pUrl, err := url.Parse(proxy)
+		if err != nil {
+			return p, fmt.Errorf("Invalid proxy '%v': %v", proxy, err.Error())
+		}
+		p.proxy = pUrl
 	}
 
 	return p, nil
