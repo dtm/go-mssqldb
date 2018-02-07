@@ -25,7 +25,7 @@ func init() {
 	sql.Register("sqlserver", driverInstanceNoProcess)
 	createDialer = func(p *connectParams) dialer {
 		if p.proxy != nil {
-			pdialer, _ = proxy.FromURL(p.proxy, proxy.Direct)
+			pdialer, _ := proxy.FromURL(p.proxy, proxy.Direct)
 			return proxyDialer{pdialer}
 		} else {
 			return tcpDialer{&net.Dialer{Timeout: p.dial_timeout, KeepAlive: p.keepAlive}}
@@ -45,7 +45,7 @@ type tcpDialer struct {
 }
 
 type proxyDialer struct {
-	pd proxy.Dailer
+	pd proxy.Dialer
 }
 
 func (d proxyDialer) Dial(addr string) (net.Conn, error) {
