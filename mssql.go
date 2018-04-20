@@ -53,7 +53,7 @@ func (d proxyDialer) Dial(ctx context.Context, addr string) (net.Conn, error) {
 }
 
 func (d tcpDialer) Dial(ctx context.Context, addr string) (net.Conn, error) {
-	return d.nd.Dial(ctx, "tcp", addr)
+	return d.nd.DialContext(ctx, "tcp", addr)
 }
 
 type Driver struct {
